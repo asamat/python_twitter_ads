@@ -23,7 +23,7 @@ Using the Library
 
 
 ```python
-from twitterads.libs.twitter_ads import TwitterAds
+from twitterads.twitter_ads import TwitterAds
 import sys
 
 tads = TwitterAds(twitter_consumer_key, twitter_consumer_secret,
