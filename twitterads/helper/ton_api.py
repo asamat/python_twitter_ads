@@ -46,7 +46,6 @@ def generate_signature(method, url, url_parameters, oauth_parameters,
         escape(str(url)) + '&' +
         escape(parameter_string)
     )
-    print("mumu", signature_base_string)
     #Get the signing key
     signing_key = create_signing_key(oauth_consumer_secret, oauth_token_secret)
 
@@ -55,7 +54,6 @@ def generate_signature(method, url, url_parameters, oauth_parameters,
 def collect_parameters(oauth_parameters, status, url_parameters):
     """Combines oauth, url and status parameters"""
     #Add the oauth_parameters to temp hash
-    print('plakito', oauth_parameters)
     temp = oauth_parameters.copy()
 
     #Add the status, if passed in.  Used for posting a new tweet
@@ -131,14 +129,17 @@ def get_oauth_parameters(consumer_key, access_token):
 
 class TwitterTon():
 
-    def __init__(self):
+    def __init__(self, twitter_consumer_key, twitter_consumer_secret,
+                       access_token, access_token_secret):
         self.method = "post"
         self.ton_url = "https://ton.twitter.com/1.1/ton/bucket/ta_partner"
         self.url_parameters = {}
-        self.keys = {"twitter_consumer_secret": '<Consumer Secret>',
-                    "twitter_consumer_key": '<Consumer Key>',
-                    "access_token": '<Access Token>',
-                    "access_token_secret": '<Access Token Secret>'}
+        self.keys = {
+                    "twitter_consumer_key": twitter_consumer_key,
+                    "twitter_consumer_secret": twitter_consumer_secret,
+                    "access_token": access_token,
+                    "access_token_secret": access_token_secret
+                    }
         self.oauth_parameters = get_oauth_parameters(
                                 self.keys['twitter_consumer_key'],
                                 self.keys['access_token'])
