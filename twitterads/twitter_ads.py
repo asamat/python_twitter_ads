@@ -59,6 +59,16 @@ class TwitterAds:
                     return data
         return None            
 
+
+    def get_all_ads_accounts(self):
+        all_ads_accounts =  self.twitter_ads.request( self.base_twitter_ads_url + 'accounts')
+        if 'data' in all_ads_accounts:
+            return all_ads_accounts['data']
+        return None    
+    
+
+
+
     '''
       Ref - https://dev.twitter.com/ads/campaigns/funding-instruments
     '''
@@ -216,6 +226,51 @@ class TwitterAds:
         return create_targeting_criteria_response
         
 
+    def get_targeting_criteria_location(self, location_type, country_code):
+        tmp_params = locals()
+        del tmp_params['self']
+        params =  dict((k, v) for k, v in tmp_params.iteritems() if v)
+        get_targeting_criteria_location_response =  self.twitter_ads.request(self.base_twitter_ads_url +\
+                                                                        'targeting_criteria/locations',
+                                                                        params=params,
+                                                                        method='GET')
+        print get_targeting_criteria_location_response
+
+
+    '''
+      Ref - https://dev.twitter.com/ads/reference/put/accounts/%3Aaccount_id/targeting_criteria
+    '''
+    def edit_targeting_criteria(self, account_id, line_item_id, tailored_audiences=None, broad_keywords=None, exact_keywords=None,
+                                phrase_keywords=None, negative_exact_keywords=None, negative_unordered_keywords=None,
+                                negative_phrase_keywords=None, locations=None, interests=None, gender=None,
+                                age_buckets=None, followers_of_users=None, similar_to_followers_of_users=None,
+                                platforms=None, platform_versions=None, devices=None,
+                                wifi_only=None, tv_channels=None, tv_genres=None, tv_shows=None,
+                                tailored_audiences_expanded=None, tailored_audiences_excluded=None,
+                                behaviors=None, behaviors_expanded=None, negative_behaviors=None,
+                                languages=None, network_operators=None, network_activation_duration_lt=None,
+                                network_activation_duration_gte=None, app_store_categories=None,
+                                app_store_categories_lookalike=None, campaign_engagement=None,
+                                user_engagement=None, engagement_type=None, exclude_app_list=None):
+
+        assert account_id is not None, 'account_id is required'
+        assert line_item_id is not None, 'line_item_id is required'
+        assert tailored_audiences is not None, 'tailored_audiences is required'
+        
+        tmp_params = locals()
+        del tmp_params['self']
+        del tmp_params['account_id']
+        params =  dict((k, v) for k, v in tmp_params.iteritems() if v)
+
+        create_targeting_criteria_response =  self.twitter_ads.request(self.base_twitter_ads_url +\
+                                                                        'accounts/' + account_id + '/targeting_criteria',
+                                                                        params=params,
+                                                                        method='PUT')
+
+       
+        return create_targeting_criteria_response
+        
+
     '''
       Ref - https://dev.twitter.com/ads/reference/post/accounts/%3Aaccount_id/tailored_audiences
     '''
@@ -275,6 +330,17 @@ class TwitterAds:
         return get_tailored_audience_response
 
 
+    def get_tailored_audience_id(self, account_id, tailored_audience_id):
+        assert account_id is not None, 'account_id is required'
+        assert tailored_audience_id is not None, 'tailored_audience_id is required'
+        
+
+        get_tailored_audience_response = self.twitter_ads.request(self.base_twitter_ads_url +\
+                                                    'accounts/' + account_id + '/tailored_audiences/' + tailored_audience_id)
+                                                                    
+        return get_tailored_audience_response
+    
+
 
     '''
       Upload Using TON API - https://dev.twitter.com/rest/ton/single-chunk
@@ -320,6 +386,36 @@ class TwitterAds:
                                                                   input_file_path=ton_response['location'], operation=operation)
         
         return audience_change_response
+
+
+    '''
+      Ref - https://dev.twitter.com/ads/reference/post/accounts/%3Aaccount_id/cards/website
+    '''
+    def create_website_tweet_card(self, account_id, card_name, website_title, website_url, website_cta, img_path_list=[]):
+        
+        assert account_id is not None, 'account_id is required'
+        
+        media_ids = []
+        for img_path in img_path_list: 
+          photo = open(img_path, 'rb')
+          response = self.twitter_ads.upload_media(media=photo)
+          assert 'media_id' in response
+          media_ids.append(response['media_id_string'])
+        
+        params = {
+                  'name' : card_name,
+                  'website_title' : website_title,
+                  'website_url' : website_url,
+                  'website_cta' : website_cta
+               }
+        if len(media_ids) > 0:
+            params['image_media_id'] = ",".join(media_ids)
+                 
+        tweet_website_card_response = self.twitter_ads.request(self.base_twitter_ads_url +\
+                                                            'accounts/' + account_id + '/cards/website',
+                                                             params=params,
+                                                             method='POST')
+        return tweet_website_card_response
 
 
     '''
@@ -372,6 +468,60 @@ class TwitterAds:
                                                             params=params,
                                                             method='POST')
         return add_promoted_tweets_response
+
+
+    def get_promoted_tweets(self, account_id, line_item_id):
+        assert account_id is not None, 'account_id is required'
+        assert line_item_id is not None, 'line_item_id is required'
+        
+        tmp_params = locals()
+        del tmp_params['self']
+        del tmp_params['account_id']
+
+        params =  dict((k, v) for k, v in tmp_params.iteritems() if v)
+
+         
+        get_promoted_tweets_response = self.twitter_ads.request(self.base_twitter_ads_url +\
+                                                            'accounts/' + account_id + '/promoted_tweets',
+                                                            params=params,
+                                                            method='GET')
+        return get_promoted_tweets_response
+
+
+    def delete_camapign(self, account_id, campaign_id):
+        assert account_id is not None, 'account_id is required'
+        assert campaign_id is not None, 'campaign_id is required'
+        
+        tmp_params = locals()
+        del tmp_params['self']
+        del tmp_params['account_id']
+        params =  dict((k, v) for k, v in tmp_params.iteritems() if v)          
+     
+        delete_campaign_response =  self.twitter_ads.request(self.base_twitter_ads_url +\
+                                                             'accounts/' + account_id + '/campaigns/' + campaign_id,
+                                                              params=params,
+                                                              method='DELETE')
+        return delete_campaign_response
+
+    def delete_line_item(self, account_id, line_item_id):
+        assert account_id is not None, 'account_id is required'
+        assert line_item_id is not None, 'line_item_id is required'
+        
+        tmp_params = locals()
+        del tmp_params['self']
+        del tmp_params['account_id']
+        params =  dict((k, v) for k, v in tmp_params.iteritems() if v)          
+     
+        delete_line_item_response =  self.twitter_ads.request(self.base_twitter_ads_url +\
+                                                             'accounts/' + account_id + '/line_items/' + line_item_id,
+                                                              params=params,
+                                                              method='DELETE')
+        return delete_line_item_response
+    
+
+
+           
+
 
 
 
